@@ -1,0 +1,76 @@
+---
+title: "MCH"
+output: html_notebook
+---
+
+First, load in the data and look at a few descriptives.
+
+```{r table1}
+library(haven)
+library(knitr)
+library(dplyr)
+library(ggplot2)
+library(magrittr)
+df <- read_sav('../data/MCH.sav')
+df$Cond <- factor(df$Cond, levels=c('A', 'B', 'C'), labels=c('Low', 'Medium', 'High'))
+df %>% 
+  filter(!is.na(Attention_Check)) %>%
+  group_by(Cond, Attention_Check) %>%
+  summarise(number = n()) -> tab
+kable(tab, caption = "Number of participants by condition")
+```
+
+It looks like people recalling happy purchases were less likely to fail the attention check. Writing about positive purchases makes for more engaged participants, maybe?
+
+```{r fig1, fig.cap = 'Distribution of purchase categories as a function of condition'}
+df %<>% filter(`filter_$`==1)
+df$Mat_Type1 <- as_factor(df$Mat_Type1)
+df %>%
+  group_by(Mat_Type1) %>%
+  summarise(number_purchases = n()) %>%
+  left_join(df) -> df
+df %>%
+  group_by(Mat_Type1, Cond) %>%
+  mutate(number=n()) %>%
+  arrange(number_purchases) %>%
+  ungroup() %>%
+  mutate(Mat_Type1 = factor(Mat_Type1, Mat_Type1)) %>%
+ggplot(aes(x=Mat_Type1, group=Cond, fill=Cond)) + 
+  geom_bar(position = position_dodge()) +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle=45, hjust=1),
+        axis.title.x = element_blank(),
+        legend.title = element_blank())
+  
+```
+
+Looking at the distribution of purchase categories, I think it's pretty clear that people in general were more likely to list either electronics or clothing. Some other informal observations are that it looks like vehicles are killjoy purchases, kitchen appliances elicit a 'meh', jewelry makes people pretty happy, and it's kind of tough to be upset about buying sporting goods. 
+
+To model the actual text, I'm going to use a variant of a Topic model. Topic models are generative statistical models that make assumptions about how a collection of text documents were generated, and then use the observed text to infer the parameters within the statistical model. In general, a topic model consists of words, topics (defined as mixtures of words, where each word has some probability of belonging to the topic), and documents (defined as mixtures of topics, where any given topic has its probability mass distributed across all documents, and the topic probabilities across all documents sums to one).
+
+STM is a variant of the vanilla topic model described above that allows incorporating of meta-information into this generative process. We can specify that the *quantity* of documents that are associated with a topic are dependent upon the metadata (topic prevalence), or we can specify that the *content* of topics are dependent upon the metadata (topic content).
+
+```{r preprocess}
+library(stm)
+processed <- textProcessor(df$Mat_Essay1, metadata=df)
+out <- prepDocuments(processed$documents, processed$vocab, processed$meta)
+docs <- out$documents
+vocab <- out$vocab
+meta <- out$meta
+```
+
+Above, we see that the raw corpus has about 45k words. Of these 45k words, we perform some preprocessing to obtain 4,743 unique terms. As seen above, we remove punctuation, numbers, and perform stemming (i.e. convert *running*, *runs*, *runner* all into *run*). Additionally, "stopwords" (e.g. pronouns, determiners, etc) are removed. Although Pennebaker et al. have found that many function words (e.g. pronouns) seem to carry psychological information, here we are more interested in the *content*, and so these common words are removed. Additionally, stripping stop words helps ease the computational load of representing and generating these types of models (though for this particular case, that is not a strong concern). Additionally, all words that occur just once are removed. After this process, we are left with 2,516 distinct terms.
+
+## Topical Prevalence
+First, we explore how the condition changes the prevalence of topics across documents, *keeping the content of the topics constant*. Ordinarily, we need to specify how many topics should be fit with a topic model. However, given that we have no *a-priori* reason to pick one value over another, and there is little previous work done using these models for psychological questions, we can take a data-driven approach to evaluate how to pick the number of topics.
+
+The first method uses a non-deterministic projection of the word co-occurrence matrix into low-dimensional space. 
+
+```{r fit-prev-stm}
+prev_fit <- searchK(out$documents, vocab=out$vocab, K=0, prevalence=~Cond,
+                max.em.its = 75, data=out$meta, init.type='Spectral')
+```
+
+
+
+
