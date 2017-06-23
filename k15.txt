@@ -1,0 +1,76 @@
+### 15 topics
+Topic 1 Top Words:
+ 	 Highest Prob: purchas, year, sinc, money, new, tight, fit 
+ 	 FREX: tight, suit, kid, grill, year, tent, compar 
+ 	 Lift: stainless, steel, wage, charcoal, conscious, grill, layout 
+ 	 Score: tight, grill, suit, tent, bath, layout, shirt 
+Topic 2 Top Words:
+ 	 Highest Prob: want, like, dont, use, lot, thing, realli 
+ 	 FREX: dont, room, smell, thing, televis, lot, want 
+ 	 Lift: aid, bake, fri, stove, anyon, blank, convent 
+ 	 Score: anyon, oven, fryer, smell, televis, bake, t-shirt 
+Topic 3 Top Words:
+ 	 Highest Prob: game, play, purchas, fun, video, time, bought 
+ 	 FREX: game, consol, play, video, fun, nintendo, graphic 
+ 	 Lift: fallout, grate, mmo, mode, tenni, unchart, blood 
+ 	 Score: game, play, tenni, consol, nintendo, graphic, video 
+Topic 4 Top Words:
+ 	 Highest Prob: use, music, got, sound, just, listen, work 
+ 	 FREX: headphon, music, listen, sound, record, guitar, speaker 
+ 	 Lift: clip, gig, habitat, headphon, homework, rub, storei 
+ 	 Score: music, headphon, symbol, listen, guitar, record, speaker 
+Topic 5 Top Words:
+ 	 Highest Prob: good, felt, look, store, realli, cloth, like 
+ 	 FREX: kayak, cloth, bra, coat, sock, yard, hoodi 
+ 	 Lift: cultur, slam, bras, costum, excess, bra, formal 
+ 	 Score: costum, kayak, shirt, bra, cloth, sock, coat 
+Topic 6 Top Words:
+ 	 Highest Prob: product, use, tri, purchas, thought, make, like 
+ 	 FREX: product, hair, ride, skin, bike, makeup, face 
+ 	 Lift: lipsens, olay, salon, sephora, serum, tshirt, acn 
+ 	 Score: skin, hair, bike, makeup, product, sixti, ride 
+Topic 7 Top Words:
+ 	 Highest Prob: look, color, like, just, store, one, went 
+ 	 FREX: purs, belt, chair, color, dress, tabl, jacket 
+ 	 Lift: cardigan, cartoon, clash, conserv, eyeshadow, handbag, incorrect 
+ 	 Score: belt, purs, dress, jacket, chair, tabl, pajama 
+Topic 8 Top Words:
+ 	 Highest Prob: one, watch, get, look, time, made, purchas 
+ 	 FREX: ring, blender, watch, earring, piec, cup, jewelri 
+ 	 Lift: diamond, jewel, nutribullet, prove, swim, earring, moon 
+ 	 Score: ring, blender, prove, earring, jewelri, watch, reel 
+Topic 9 Top Words:
+ 	 Highest Prob: one, new, laptop, comput, use, purchas, get 
+ 	 FREX: laptop, comput, len, mous, vacuum, best, program 
+ 	 Lift: e-cig, inventori, len, lenovo, mous, photograph, razer 
+ 	 Score: laptop, lenovo, len, comput, vacuum, mous, program 
+Topic 10 Top Words:
+ 	 Highest Prob: shoe, pair, wear, fit, tri, look, new 
+ 	 FREX: shoe, jean, pair, wear, pant, cloth, fit 
+ 	 Lift: accent, blister, cotton, dryer, footwear, tempt, apprehens 
+ 	 Score: shoe, pair, jean, wear, cloth, feet, pant 
+Topic 11 Top Words:
+ 	 Highest Prob: shirt, car, purchas, drive, one, will, time 
+ 	 FREX: car, shirt, drive, fix, tire, concert, lamp 
+ 	 Lift: street, tour, umbrella, adapt, annual, brake, etsi 
+ 	 Score: shirt, car, ticket, concert, lamp, ray, tour 
+Topic 12 Top Words:
+ 	 Highest Prob: phone, purchas, use, happi, qualiti, price, also 
+ 	 FREX: phone, samsung, cell, protect, smartphon, school, snack 
+ 	 Lift: class, basebal, bookstor, galaxi, highlight, textbook, beer 
+ 	 Score: phone, bookstor, samsung, galaxi, snack, smartphon, cell 
+Topic 13 Top Words:
+ 	 Highest Prob: book, tablet, read, amazon, use, one, devic 
+ 	 FREX: tablet, fire, book, read, kindl, devic, amazon 
+ 	 Lift: barn, echo, eread, fiction, french, nobl, alexa 
+ 	 Score: tablet, book, fire, kindl, devic, roku, florida 
+Topic 14 Top Words:
+ 	 Highest Prob: happi, purchas, make, one, time, use, need 
+ 	 FREX: scale, moder, happi, make, coffe, pot, easier 
+ 	 Lift: contribut, kor, michael, plate, protein, backpack, maker 
+ 	 Score: contribut, backpack, coffe, maker, pot, printer, desk 
+Topic 15 Top Words:
+ 	 Highest Prob: set, bed, get, one, step, purchas, day 
+ 	 FREX: mattress, bed, couch, step, sleep, fitbit, set 
+ 	 Lift: calori, foam, loveseat, mattress, spare, twin, sleep 
+ 	 Score: mattress, bed, couch, step, fitbit, sleep, reclin 

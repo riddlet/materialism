@@ -64,13 +64,36 @@ Above, we see that the raw corpus has about 45k words. Of these 45k words, we pe
 ## Topical Prevalence
 First, we explore how the condition changes the prevalence of topics across documents, *keeping the content of the topics constant*. Ordinarily, we need to specify how many topics should be fit with a topic model. However, given that we have no *a-priori* reason to pick one value over another, and there is little previous work done using these models for psychological questions, we can take a data-driven approach to evaluate how to pick the number of topics.
 
-The first method uses a non-deterministic projection of the word co-occurrence matrix into low-dimensional space. 
+There are many metrics one can use to evaluate a topic model. Here, we'll focus on two - the ability of the model to predict new data (held-out likelihood), and the degree to which high probability words are likely to appear in other topics (Exclusivity). For both of these metrics, higher values are better. I fit topic models using $K$ topics where $K=(3, 4, ... 20)$, and show the results of these metrics below.
 
-```{r fit-prev-stm}
-prev_fit <- searchK(out$documents, vocab=out$vocab, K=0, prevalence=~Cond,
-                max.em.its = 75, data=out$meta, init.type='Spectral')
+
+```{r fig2, fig.cap="Held-out Likelihood as a function of the number of topics"}
+prev_fit <- searchK(out$documents, vocab=out$vocab, K=seq(3, 20, by =1), prevalence=~Cond,
+                max.em.its = 200, data=out$meta, init.type='Spectral')
+ggplot(prev_fit$results, aes(x=K, y=heldout)) + 
+  geom_line() + 
+  theme_classic() +
+  ylab('Held-out Likelihood')
 ```
 
 
+```{r fig3, fig.cap="Exclusivity as a function of the number of topics"}
+ggplot(prev_fit$results, aes(x=K, y=exclus)) + 
+  geom_line() + 
+  theme_classic() +
+  ylab('Exclusivity')
+```
 
 
+These two metrics suggest around a dozen topics is an ideal point. Held-out likelihood maximizes at k=12 (`r round(pre_fit$results$heldout[12], 2)`), while exclusivity begins to plateau at around K=13 (`r round(pre_fit$results$exclus[13], 2)). Next, we can qualitatively examine a handful of models to be sure that we're picking the model that is most interpretable.
+
+```{r}
+k10 <- stm(out$documents, vocab=out$vocab, K=10, prevalence=~Cond,
+                max.em.its = 200, data=out$meta, init.type='Spectral')
+k12 <- stm(out$documents, vocab=out$vocab, K=12, prevalence=~Cond,
+                max.em.its = 200, data=out$meta, init.type='Spectral')
+k13 <- stm(out$documents, vocab=out$vocab, K=13, prevalence=~Cond,
+                max.em.its = 200, data=out$meta, init.type='Spectral')
+k15 <- stm(out$documents, vocab=out$vocab, K=15, prevalence=~Cond,
+                max.em.its = 200, data=out$meta, init.type='Spectral')
+```
