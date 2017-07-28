@@ -11,6 +11,7 @@ library(knitr)
 library(dplyr)
 library(ggplot2)
 library(magrittr)
+library(forcats)
 df <- read_sav('../data/MCH.sav')
 df$Cond <- factor(df$Cond, levels=c('A', 'B', 'C'), labels=c('Low', 'Medium', 'High'))
 df %>% 
@@ -34,7 +35,7 @@ df %>%
   mutate(number=n()) %>%
   arrange(number_purchases) %>%
   ungroup() %>%
-  mutate(Mat_Type1 = factor(Mat_Type1, Mat_Type1)) %>%
+  mutate(Mat_Type1 = fct_reorder(Mat_Type1, number_purchases)) %>%
 ggplot(aes(x=Mat_Type1, group=Cond, fill=Cond)) + 
   geom_bar(position = position_dodge()) +
   theme_classic() +
@@ -85,15 +86,24 @@ ggplot(prev_fit$results, aes(x=K, y=exclus)) +
 ```
 
 
-These two metrics suggest around a dozen topics is an ideal point. Held-out likelihood maximizes at k=12 (`r round(pre_fit$results$heldout[12], 2)`), while exclusivity begins to plateau at around K=13 (`r round(pre_fit$results$exclus[13], 2)). Next, we can qualitatively examine a handful of models to be sure that we're picking the model that is most interpretable.
+These two metrics suggest around a dozen topics is an ideal point. Held-out likelihood maximizes at k=12 (`r round(pre_fit$results$heldout[12], 2)`), while exclusivity begins to plateau at around K=13 (`r round(pre_fit$results$exclus[13], 2)). After some discussion among my collaborators, we settled on a model with 15 topics. This is estimated below.
 
-```{r}
-k10 <- stm(out$documents, vocab=out$vocab, K=10, prevalence=~Cond,
-                max.em.its = 200, data=out$meta, init.type='Spectral')
-k12 <- stm(out$documents, vocab=out$vocab, K=12, prevalence=~Cond,
-                max.em.its = 200, data=out$meta, init.type='Spectral')
-k13 <- stm(out$documents, vocab=out$vocab, K=13, prevalence=~Cond,
-                max.em.its = 200, data=out$meta, init.type='Spectral')
+```{r, results='hide'}
 k15 <- stm(out$documents, vocab=out$vocab, K=15, prevalence=~Cond,
                 max.em.its = 200, data=out$meta, init.type='Spectral')
 ```
+
+After estimating this model, one of the first things to do is look at the word-topic distributions. The STM package provides several methods for examining the "top words" in a topic. `Prob` simply outputs the words that have the highest probability weights in that topic. While straightforward, this has the disadvantage of favoring words that are more common in the corpus. `FREX` weights words by their frequency and how exclusive they are to the topic. `Lift` is similar in that it weights words by how frequently they appear in other topics. `Score` divides the log frequency of the word in the topic by the log frequency of the word in other topics.
+
+```{r}
+labelTopics(k15)
+```
+
+This illustrates the the estimated topics map reasonably well to many of the purchase categories, though some (e.g. electronics) appear to have split into more than one topic (topic 13, 12, 9).
+
+Let's look at some documents that are strongly associated with specific topics. I'm looking at 15 because I kind of love the essay. I leave it here without comment.
+
+```{r}
+findThoughts(k15, texts=df$Mat_Essay1, n=1, topics = 15)
+```
+
