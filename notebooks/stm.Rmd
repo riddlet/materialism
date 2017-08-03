@@ -106,4 +106,70 @@ Let's look at some documents that are strongly associated with specific topics. 
 ```{r}
 findThoughts(k15, texts=df$Mat_Essay1, n=1, topics = 15)
 ```
+This topic appears to be about furniture. This *particular* piece of furniture is a set of dog steps, but I suppose even dogs need furniture...(?).
+
+Anyway, let's examine some other details of the model. The figure below details the overall proportion of all essays that are composed of each of the 15 topics.
+
+```{r}
+plot(k15, type='summary', labeltype='frex')
+```
+
+Recall that when we looked at the categories chosen as indicated by individuals, clothing and electronics dominated. This is reflected here, where 6 of the 8 top topics come from these two prominent categories (note: the words here are chosen based on their FREX score).
+
+```{r}
+prep <- estimateEffect(1:15 ~ Cond, k15, meta=out$meta, uncertainty='Global')
+plot(prep, covariate='Cond', topics=10, main='Topic 10: shoe, jean, pair', 
+     labeltype='custom', custom.labels=c('Low', 'Medium', 'High'))
+
+```
+
+The figure above shows the relationship between topic 10 and condition. On the x axis is estimated topic proportion, and the bars represent 95% confidence intervals. There does not appear to be a systematic relationship between condition and propensity to write about this particular topic. However, other topics do show some systematic relationship. For instance, topic 10 appears to be a topic that is, to some extent, actually devoted to the "medium" condition. This effect is plotted below, and is reinforced when looking at the top two essays from this topic
+
+```{r}
+plot(prep, covariate='Cond', topics=14, main='Topic 14: Scale, Moder, Happy', 
+     labeltype='custom', custom.labels=c('Low', 'Medium', 'High'))
+```
+
+```{r}
+findThoughts(k15, texts=df$Mat_Essay1, n=2, topic=14)
+```
+
+I also observe a difference in topic 15:
+
+```{r}
+plot(prep, covariate='Cond', topics=15, main='Topic 15: matress, bed, couch', 
+     labeltype='custom', custom.labels=c('Low', 'Medium', 'High'))
+```
+
+```{r}
+findThoughts(k15, texts=df$Mat_Essay1, n=2, topic=15)
+```
+
+It is evident that this particular form of analysis tends to pick up on the popularity of writing about various purchases. While this maps well to intuition (it would be odd if a statistical model did *not* pick up on these types of content differences), they hold little theoretical interest. Nonetheless, there are two other topics that show reliable differences. I plot the estimates and sample essays below without elaboration.
+
+```{r}
+plot(prep, covariate='Cond', topics=5, main='Topic 5: Kayak, cloth, bra', 
+     labeltype='custom', custom.labels=c('Low', 'Medium', 'High'))
+```
+
+```{r}
+findThoughts(k15, texts=df$Mat_Essay1, n=2, topic=5)
+```
+
+```{r}
+plot(prep, covariate='Cond', topics=6, main='Topic 6: product, hair, ride', 
+     labeltype='custom', custom.labels=c('Low', 'Medium', 'High'))
+```
+
+```{r}
+findThoughts(k15, texts=df$Mat_Essay1, n=2, topic=6)
+```
+
+Because the previous form of model did not capture the question we were interested in, we can now refit a model, allowing topical content (instead of prevalency) to vary by condition. This should allow, in principle, for us to state, for instance, that individuals in condition X wrote about a given topic in a way that is different from those in condition Y. This model is fit below:
+
+```{r}
+k15.content <- stm(out$documents, out$vocab, K=15, prevalence=~Cond,
+                   content=~Cond, max.em.its = 75,
+                   data=out$meta, init.type='Spectral')
+```
 
