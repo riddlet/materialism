@@ -165,11 +165,62 @@ plot(prep, covariate='Cond', topics=6, main='Topic 6: product, hair, ride',
 findThoughts(k15, texts=df$Mat_Essay1, n=2, topic=6)
 ```
 
-Because the previous form of model did not capture the question we were interested in, we can now refit a model, allowing topical content (instead of prevalency) to vary by condition. This should allow, in principle, for us to state, for instance, that individuals in condition X wrote about a given topic in a way that is different from those in condition Y. This model is fit below:
+Because the previous form of model did not capture the question we were interested in, we can now refit a model, allowing topical content to vary by condition in addition to allowing topic prevalency to vary by condition.. This should allow, in principle, for us to state, for instance, that individuals in condition X wrote about a given topic in a way that is different from those in condition Y. This model is fit below:
 
 ```{r}
 k15.content <- stm(out$documents, out$vocab, K=15, prevalence=~Cond,
-                   content=~Cond, max.em.its = 75,
+                   content=~Happy_1, max.em.its = 75,
                    data=out$meta, init.type='Spectral')
+summary(k15.content)
 ```
 
+The output displayed above shows:
+
+1. The overall topic words.
+2. The words that distinguish low, medium, and high happiness overall.
+3. For each topic, the words associated with low, medium and high happiness conditions.
+
+```{r}
+prep <- estimateEffect(1:15 ~ Cond, k15.content, meta=out$meta, uncertainty='Global')
+plot(prep, covariate='Cond', topics=1, main='Topic 10: shoe, jean, pair', 
+     labeltype='custom', custom.labels=c('Low', 'Medium', 'High'))
+```
+
+```{r}
+par(mfrow = c(1, 3))
+plot(k15.content, type='perspectives', topics=1, covarlevels = c('Low', 'Medium'), text.cex = 2.5)
+plot(k15.content, type='perspectives', topics=1, covarlevels = c('Low', 'High'), text.cex = 2.5)
+plot(k15.content, type='perspectives', topics=1, covarlevels=c('Medium', 'High'), text.cex = 2.5)
+
+grid.arrange(grob(p1, p2, p3))
+plot(k15.content, type='perspectives', topics=1, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=2, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=2, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=3, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=3, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=4, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=4, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=5, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=5, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=6, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=6, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=7, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=7, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=8, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=8, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=9, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=9, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=10, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=10, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=11, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=11, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=12, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=12, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=13, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=13, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=14, covarlevels = c('Low', 'High'))
+plot(k15.content, type='perspectives', topics=14, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=15, covarlevels = c('Low', 'Medium'))
+plot(k15.content, type='perspectives', topics=15, covarlevels = c('Low', 'High'))
+
+```
