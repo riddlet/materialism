@@ -53,6 +53,7 @@ STM is a variant of the vanilla topic model described above that allows incorpor
 
 ```{r preprocess}
 library(stm)
+df$Happy_1 <- as.numeric(df$Happy_1)
 processed <- textProcessor(df$Mat_Essay1, metadata=df)
 out <- prepDocuments(processed$documents, processed$vocab, processed$meta)
 docs <- out$documents
@@ -169,7 +170,7 @@ Because the previous form of model did not capture the question we were interest
 
 ```{r}
 k15.content <- stm(out$documents, out$vocab, K=15, prevalence=~Cond,
-                   content=~Happy_1, max.em.its = 75,
+                   content=~Cond, max.em.its = 75,
                    data=out$meta, init.type='Spectral')
 summary(k15.content)
 ```
@@ -181,7 +182,7 @@ The output displayed above shows:
 3. For each topic, the words associated with low, medium and high happiness conditions.
 
 ```{r}
-prep <- estimateEffect(1:15 ~ Cond, k15.content, meta=out$meta, uncertainty='Global')
+prep <- estimateEffect(1:15 ~ Happy_1, k15.content, meta=out$meta, uncertainty='Global')
 plot(prep, covariate='Cond', topics=1, main='Topic 10: shoe, jean, pair', 
      labeltype='custom', custom.labels=c('Low', 'Medium', 'High'))
 ```
