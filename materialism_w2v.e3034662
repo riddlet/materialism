@@ -1,0 +1,2 @@
+/var/spool/torque/mom_priv/jobs/3034662.moose.cc.columbia.edu.SC: line 20: w2v_7.py: command not found
+No handlers could be found for logger "gensim.models.doc2vec"
