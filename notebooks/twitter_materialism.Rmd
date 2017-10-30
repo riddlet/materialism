@@ -1,0 +1,135 @@
+---
+title: "Twitter sentiment"
+author: "Travis"
+date: "10/12/2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE, cache = F)
+```
+
+
+## Introduction
+
+```{r read_data}
+library(haven)
+library(lme4)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(stringr)
+library(broom)
+df <- read.csv('../data/twitterdat_text.csv')
+df.people <- read_sav('../data/Twitter_Personality_Study.sav')
+double_dippers <- rownames(table(df.people$Twitter_name)[which(table(df.people$Twitter_name)>1)])
+double_dippers <- c(double_dippers, c('triddle42'))
+"%ni%" <- Negate("%in%")
+double_dippers_twitter <- tolower(str_replace(double_dippers, '^@', ''))
+df %>% 
+  filter(name %ni% double_dippers_twitter) %>%
+  filter(retweeted=='False') %>%
+  group_by(name) %>% 
+  summarise(tweets=n()) %>% 
+  summarise(m_tweets = mean(tweets), 
+            sd_tweets = sd(tweets)) -> descriptives
+```
+
+This is an investigation into whether the text produced by individuals on twitter is a function of some psychological characteristics they have. In particular, the variables we have of interest are the Satisfaction with life scale (SWLS), and then a materialism scale (MVS), and experiential buying scale (EBTS). We collected data on these constructs from  `r length(table(df.people$Twitter_name))` people. Six of these individuals were excluded from subsequent analyses because they completed the survey more than once.
+
+Of the remaining people, we were able to obtain twitter data for `r length(table(df$name))` individuals. The number of tweets collected across individuals is close to being characterized  by a bimodal distribution (see figure 1). The true distribution almost certainly is highly skewed with a long tail (i.e. not bimodal), but because the Twitter API limits how far back we can go in a timeline, there's some censoring going on. The overall mean of this distribution is `r round(descriptives$m_tweets,2)`, with a standard deviation of `r round(descriptives$sd_tweets,2)`.
+
+```{r fig1}
+df %>% 
+  filter(name %ni% double_dippers_twitter) %>%
+  filter(retweeted=='False') %>%
+  group_by(name) %>% 
+  summarise(tweets=n()) %>% 
+  ggplot(aes(x=tweets)) + 
+  geom_density() +
+  theme_classic()
+```
+
+
+
+Each of these tweets were scored for sentiment using Vader, a rule-based, context-aware sentiment model that was specifically developed for short, social media text data such as tweets. Vader combines a word list much longer than other sentiment text lexicons (e.g. LIWC, General Inquirer, ANEW, etc) with some lexical features typical in social media data (e.g. emoticons, acronyms), crowd-sourced valence ratings, and some simple rules (e.g. reverse the sentiment in the presence of negation) to achieve performance that exceeds that of other popular sentiment approaches, and even approaches human labeling in some circumstances (e.g. social media text).
+
+The result is a sentiment score that ranges from -1 (maximally negative) to 1 (maximally positive). This is the outcome measure that we are modeling.
+
+The sentiment was modeled with a multilevel model. Formally, the sentiment of tweet $i$ from person $j$ is estimated as:
+
+$$
+y_{ij} = X_{ij}\beta  + \alpha^{p} + \epsilon_{ij}
+$$
+Where $X_{ij}$ is the design matrix (in this case, it consists of four columns - a global intercept, and the set of scores for each of the 3 constructs), $\beta$ are the so-called fixed-effect estimates for the intercept and the effect of a given survey on sentiment, $\alpha^{p}$ is a vector of so-called random effect intercepts, and $\epsilon_{ij}$ is the error term, which are IID distributed. Predictors and outcome variable were standardized. As such, the coefficients are interpretable directly as cohen's d.
+
+The coefficient of substantive interest in this modeling framework is the direction and magnitude of the slope for the effect of responses on the surveys on the sentiment of tweets exhibited by individuals in the data.
+
+
+```{r estimate + model}
+df.people %>% 
+  filter(Native_English==1) %>%
+  filter(Twitter_name %ni% double_dippers_twitter) %>% 
+  mutate(name=tolower(str_replace(Twitter_name, '^@', ''))) %>%
+  filter(Twitter_name %ni% double_dippers_twitter) %>% 
+  select(name, SWLS, MVS, EBTS, Experiential_Advantage) %>%
+  mutate(SWLS = scale(SWLS)[,1],
+         MVS = scale(MVS)[,1],
+         EBTS = scale(EBTS)[,1],
+         exp_ad = scale(Experiential_Advantage)[,1]) %>%
+  right_join(df) %>%
+  filter(retweeted=='False') %>%
+  mutate(vader = scale(vader)[,1]) -> fulldat
+
+m_all <- lmer(vader~SWLS+MVS+EBTS + (1|name), data = fulldat)
+
+cis <- tidy(confint(m_all))
+names(cis) <- c('term', 'lower', 'upper')
+
+tidy(m_all) %>%
+  left_join(cis) -> summary_dat
+
+summary_dat %>%
+  filter(term %in% c('SWLS', 'MVS', 'EBTS')) %>%
+  ggplot(aes(x=term, y=estimate)) +
+  geom_point(size=2) +
+  geom_errorbar(aes(ymin=lower, ymax=upper), width=.5) +
+  coord_flip() +
+  theme_classic() +
+  geom_hline(yintercept = 0) +
+  ggtitle('Expected change in sentiment given an increase of 1 standardized unit on each scale',
+          'Likelihood profile based confidence intervals')
+```
+
+As is seen above, each of these effects is estimated to be very small, and all confidence intervals overlap with zero. The largest effect, SWLS, is characterized by a cohen's d of about .03.
+
+To give a sense of what these data look like, the figure below shows the effect of SWLS on sentiment. The red dots are the random effects estimates for individuals, and the black dots are the empirical means. The plot is faceted by the number of observations we have for each person. In the first panel, we can see the effects of shrinkage on the random effects - since we do not have much information about these individuals, our belief about their true value should be informed by the large amount of data we have for other individuals. As such, the random effect *BLUPS* (best linear unbiased predictors) are shrunk toward the group-level prediction, and this shrinkage is especially extreme for values that are relative outliers. This shrinkage essentially disappears when we have a lot of data for a given individual.
+
+```{r}
+fulldat %>%
+  select(name, EBTS, SWLS, MVS) %>%
+  filter(!is.na(SWLS)) %>%
+  distinct() -> pred_dat
+
+pred_dat$y_hat <- predict(m_all, newdata=pred_dat)
+
+fulldat %>%
+  group_by(name) %>%
+  summarise(empirical_mean = mean(vader, na.rm=T),
+            num_obs = n()) %>%
+  left_join(pred_dat) %>%
+  mutate(group = ntile(num_obs, 6)) %>%
+  mutate(group = factor(group, labels = c('x=<19','19<x=<86', '86<x=<312',
+                                          '312<x=<1089', '1089<x=<2387', 
+                                          '2387<x'))) -> plot.dat
+
+ggplot(plot.dat, aes(x=SWLS, y=empirical_mean)) +
+  geom_point(color='black', alpha=.4) +
+  geom_point(data=plot.dat, aes(x=SWLS, y=y_hat), color='red') +
+  geom_segment((aes(x=SWLS, xend=SWLS, y=empirical_mean, yend=y_hat)), alpha=.4) +
+  facet_wrap(~group) +
+  theme_classic() +
+  ylab('Sentiment')
+```
